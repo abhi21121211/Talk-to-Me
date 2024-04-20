@@ -1,6 +1,9 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const connectDB = require("./config/db");
+const userRoutes = require('./routes/userRoutes');
+const { notFound , errorHandler} = require('./middleware/errorMiddleware');
+
 const colors = require('colors');
 // const data = require('/data/data.js');
 
@@ -15,7 +18,9 @@ app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
-app.use('/api/user', require('./routes/userRoutes'));
+app.use('/api/user', userRoutes);
+app.use(notFound)
+app.use(errorHandler);
 
 
 const PORT = process.env.PORT || 5000;

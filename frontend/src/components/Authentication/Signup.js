@@ -1,6 +1,6 @@
-import { Button, FormControl, FormLabel, Input, InputGroup, InputRightElement, VStack } from '@chakra-ui/react'
+import { Button, FormControl, FormLabel, Input, InputGroup, InputRightElement, Toast, VStack, useToast } from '@chakra-ui/react'
 import React, { useState } from 'react'
-
+// import { v2 as cloudinary } from 'cloudinary';
 function Signup() {
     const [show, setShow] = useState(false)
     const [name, setName] = useState();
@@ -8,9 +8,42 @@ function Signup() {
     const [password, setPassword] = useState();
     const [confirmPassword, setConfirmPassword] = useState();
     const [pic, setPic] = useState();
+    const [loading, setLoading] = useState(false);
+    const toast = useToast();
 
+
+    
     const postDetails = (pics) => {
-
+        setLoading(true);
+        if (pics === undefined) {
+            toast({
+                title: "Please Select an Image!",
+                status: "warning",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
+            });
+            return;
+        }
+        if (pics.type === "image/jpeg" || pics.type === "image/png") {
+            const data = new FormData();
+            data.append("file", pics);
+            data.append("upload_preset", "Talk-to-me");
+            data.append("cloud_name", "dvnoea6wo");
+            fetch("https://api.cloudinary.com/v1_1/abhidukare111/image/upload", {
+                method: "post",
+                body: data,
+            })
+                .then((res) => res.json())
+                .then((data) => {
+                    setPic(data.url.toString());
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    console.log(err);
+                    setLoading(false);
+                });
+        }
     }
 
     const submitHandler = () => {
