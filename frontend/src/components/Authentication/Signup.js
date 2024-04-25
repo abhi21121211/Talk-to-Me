@@ -1,27 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Button, FormControl, FormLabel, Input, InputGroup, InputRightElement, VStack, useToast } from '@chakra-ui/react';
-import axios from 'axios';
+import { Button } from "@chakra-ui/button";
+import { FormControl, FormLabel } from "@chakra-ui/form-control";
+import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
+import { VStack } from "@chakra-ui/layout";
+import { useToast } from "@chakra-ui/toast";
+import axios from "axios";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
-    const [showPassword, setShowPassword] = useState(false);
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmpassword, setConfirmPassword] = useState('');
-    const [pic, setPic] = useState('');
-    const [picLoading, setPicLoading] = useState(false);
-    const [redirect, setRedirect] = useState(false); // State for redirection
+    const [show, setShow] = useState(false);
+    const handleClick = () => setShow(!show);
     const toast = useToast();
+    const navigate = useNavigate(); // Use useNavigate for navigation
 
-    const handleTogglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
-    };
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [confirmpassword, setConfirmpassword] = useState("");
+    const [password, setPassword] = useState("");
+    const [pic, setPic] = useState("");
+    const [picLoading, setPicLoading] = useState(false);
 
     const submitHandler = async () => {
         setPicLoading(true);
         if (!name || !email || !password || !confirmpassword) {
             toast({
-                title: "Please Fill all the Feilds",
+                title: "Please Fill all the Fields",
                 status: "warning",
                 duration: 5000,
                 isClosable: true,
@@ -38,6 +41,7 @@ const Signup = () => {
                 isClosable: true,
                 position: "bottom",
             });
+            setPicLoading(false);
             return;
         }
         console.log(name, email, password, pic);
@@ -67,11 +71,11 @@ const Signup = () => {
             });
             localStorage.setItem("userInfo", JSON.stringify(data));
             setPicLoading(false);
-            // history.push("/chats");
+            navigate("/chats"); // Use navigate to redirect to "/chats" after successful registration
         } catch (error) {
             toast({
-                title: "Error Occured!",
-                description: error.response.data.message,
+                title: "Error Occurred!",
+                description: error.response?.data?.message || "Something went wrong.",
                 status: "error",
                 duration: 5000,
                 isClosable: true,
@@ -81,70 +85,79 @@ const Signup = () => {
         }
     };
 
-    // useEffect(() => {
-    //     // Use effect to navigate when redirect flag changes to true
-    //     if (redirect) {
-    //         // Perform redirection or navigation here using window.location or other methods
-    //         window.location.href = '/chats'; // Example: Redirect to '/chats' route
-    //     }
-    // }, [redirect]);
-
-    const handleImageUpload = (selectedFile) => {
+    const postDetails = (pics) => {
         setPicLoading(true);
-
-        if (!selectedFile) {
+        if (!pics) {
             toast({
-                title: 'Please select an image',
-                status: 'warning',
+                title: "Please Select an Image!",
+                status: "warning",
                 duration: 5000,
                 isClosable: true,
-                position: 'bottom',
+                position: "bottom",
             });
             setPicLoading(false);
             return;
         }
-
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-        formData.append('upload_preset', 'Talk-to-Me');
-        formData.append('cloud_name', 'dvnoea6wo');
-
-        fetch('https://api.cloudinary.com/v1_1/dvnoea6wo/image/upload', {
-            method: 'POST',
-            body: formData,
-        })
-            .then((response) => response.json())
-            .then((data) => {
-                setPic(data.url);
-                setPicLoading(false);
+        console.log(pics);
+        if (pics.type === "image/jpeg" || pics.type === "image/png") {
+            const data = new FormData();
+            data.append("file", pics);
+            data.append("upload_preset", "chat-app");
+            data.append("cloud_name", "piyushproj");
+            fetch("https://api.cloudinary.com/v1_1/piyushproj/image/upload", {
+                method: "post",
+                body: data,
             })
-            .catch((error) => {
-                console.error('Error uploading image:', error);
-                setPicLoading(false);
+                .then((res) => res.json())
+                .then((data) => {
+                    setPic(data.url.toString());
+                    console.log(data.url.toString());
+                    setPicLoading(false);
+                })
+                .catch((err) => {
+                    console.log(err);
+                    setPicLoading(false);
+                });
+        } else {
+            toast({
+                title: "Please Select an Image!",
+                status: "warning",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
             });
+            setPicLoading(false);
+        }
     };
 
     return (
-        <VStack spacing="5px" maxW="400px" m="auto">
+        <VStack spacing="5px">
             <FormControl id="first-name" isRequired>
                 <FormLabel>Name</FormLabel>
-                <Input placeholder="Enter Your Name" onChange={(e) => setName(e.target.value)} />
+                <Input
+                    placeholder="Enter Your Name"
+                    onChange={(e) => setName(e.target.value)}
+                />
             </FormControl>
             <FormControl id="email" isRequired>
                 <FormLabel>Email Address</FormLabel>
-                <Input type="email" placeholder="Enter Your Email Address" onChange={(e) => setEmail(e.target.value)} />
+                <Input
+                    type="email"
+                    placeholder="Enter Your Email Address"
+                    onChange={(e) => setEmail(e.target.value)}
+                />
             </FormControl>
             <FormControl id="password" isRequired>
                 <FormLabel>Password</FormLabel>
                 <InputGroup size="md">
                     <Input
-                        type={showPassword ? 'text' : 'password'}
+                        type={show ? "text" : "password"}
                         placeholder="Enter Password"
                         onChange={(e) => setPassword(e.target.value)}
                     />
                     <InputRightElement width="4.5rem">
-                        <Button h="1.75rem" size="sm" onClick={handleTogglePasswordVisibility}>
-                            {showPassword ? 'Hide' : 'Show'}
+                        <Button h="1.75rem" size="sm" onClick={handleClick}>
+                            {show ? "Hide" : "Show"}
                         </Button>
                     </InputRightElement>
                 </InputGroup>
@@ -153,29 +166,37 @@ const Signup = () => {
                 <FormLabel>Confirm Password</FormLabel>
                 <InputGroup size="md">
                     <Input
-                        type={showPassword ? 'text' : 'password'}
+                        type={show ? "text" : "password"}
                         placeholder="Confirm Password"
-                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        onChange={(e) => setConfirmpassword(e.target.value)}
                     />
                     <InputRightElement width="4.5rem">
-                        <Button h="1.75rem" size="sm" onClick={handleTogglePasswordVisibility}>
-                            {showPassword ? 'Hide' : 'Show'}
+                        <Button h="1.75rem" size="sm" onClick={handleClick}>
+                            {show ? "Hide" : "Show"}
                         </Button>
                     </InputRightElement>
                 </InputGroup>
             </FormControl>
             <FormControl id="pic">
-                <FormLabel>Upload Your Picture</FormLabel>
-                <Input type="file" p={1.5} accept="image/*" onChange={(e) => handleImageUpload(e.target.files[0])} />
+                <FormLabel>Upload your Picture</FormLabel>
+                <Input
+                    type="file"
+                    p={1.5}
+                    accept="image/*"
+                    onChange={(e) => postDetails(e.target.files[0])}
+                />
             </FormControl>
-            <Button colorScheme="blue" width="100%" style={{ marginTop: '15px' }} onClick={submitHandler} isLoading={picLoading}>
+            <Button
+                colorScheme="blue"
+                width="100%"
+                style={{ marginTop: 15 }}
+                onClick={submitHandler}
+                isLoading={picLoading}
+            >
                 Sign Up
             </Button>
         </VStack>
     );
 };
 
-
-
 export default Signup;
-

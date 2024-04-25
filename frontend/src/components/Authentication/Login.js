@@ -2,18 +2,22 @@ import { Button } from "@chakra-ui/button";
 import { FormControl, FormLabel } from "@chakra-ui/form-control";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { VStack } from "@chakra-ui/layout";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { useToast } from "@chakra-ui/react";
-// import { ChatState } from "../../Context/ChatProvider";
+import { ChatState } from "../../Context/ChatProvider";
+import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
 
 const Login = () => {
     const [show, setShow] = useState(false);
+    const handleClick = () => setShow(!show);
+    const toast = useToast();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const toast = useToast();
-    // const { setUser } = ChatState();
+
+    const navigate = useNavigate(); // Use useNavigate for navigation
+    const { setUser } = ChatState();
 
     const submitHandler = async () => {
         setLoading(true);
@@ -36,7 +40,11 @@ const Login = () => {
                 },
             };
 
-            const { data } = await axios.post("/api/user/login", { email, password }, config);
+            const { data } = await axios.post(
+                "/api/user/login",
+                { email, password },
+                config
+            );
 
             toast({
                 title: "Login Successful",
@@ -45,15 +53,14 @@ const Login = () => {
                 isClosable: true,
                 position: "bottom",
             });
-            // setUser(data);
+            setUser(data);
             localStorage.setItem("userInfo", JSON.stringify(data));
             setLoading(false);
-            // Do not use history.push, set a state variable for redirection
-            setIsLoggedIn(true); // Set a state variable for successful login
+            navigate("/chats"); // Use navigate to redirect to "/chats" after successful login
         } catch (error) {
             toast({
                 title: "Error Occurred!",
-                description: error.response.data.message || "Something went wrong",
+                description: error.response?.data?.message || "Something went wrong.",
                 status: "error",
                 duration: 5000,
                 isClosable: true,
@@ -62,17 +69,6 @@ const Login = () => {
             setLoading(false);
         }
     };
-
-    // State variable to track login status
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    // Use useEffect to perform redirection upon successful login
-    useEffect(() => {
-        if (isLoggedIn) {
-            // Perform redirection to /chats route or any other route upon successful login
-            window.location.href = "/chats"; // Use window.location to navigate
-        }
-    }, [isLoggedIn]);
 
     return (
         <VStack spacing="10px">
@@ -92,10 +88,10 @@ const Login = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         type={show ? "text" : "password"}
-                        placeholder="Enter password"
+                        placeholder="Enter Password"
                     />
                     <InputRightElement width="4.5rem">
-                        <Button h="1.75rem" size="sm" onClick={() => setShow(!show)}>
+                        <Button h="1.75rem" size="sm" onClick={handleClick}>
                             {show ? "Hide" : "Show"}
                         </Button>
                     </InputRightElement>
