@@ -2,6 +2,7 @@ import { Button, FormControl, Input, Modal, ModalBody, ModalCloseButton, ModalCo
 import React, { useState } from 'react'
 import { ChatState } from '../../Context/ChatProvider';
 import axios from 'axios';
+import UserListItem from '../UserAvatar/UserListItem';
 
 const GroupChatModal = ({ children }) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -48,7 +49,18 @@ const GroupChatModal = ({ children }) => {
     }
 
     const handleGroup = (userToAdd) => {
-        
+        if(selectedUsers.includes(userToAdd)) {
+            toast({
+                title: "User already added",
+                status: "warning",
+                duration: 5000,
+                isClosable: true,
+                position: "top",
+            });
+            return;
+        }
+
+        setSelectedUsers([...selectedUsers, userToAdd]);
 
     }
 
@@ -75,6 +87,11 @@ const GroupChatModal = ({ children }) => {
                           <FormControl>
                               <Input placeholder='Add Users' mb={1} onChange={(e) => setSearch(e.target.value)} />
                           </FormControl>
+                          {
+                              loading ? <div>Loading...</div> : (
+                                  searchResult?.slice(0,4).map((user) =><UserListItem key={user._id} user={user} handleFunction={() => handleGroup(user)}/>)
+                              )
+                          }
                           
                       </ModalBody>
 

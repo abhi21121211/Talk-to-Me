@@ -96,7 +96,7 @@ const logoutHandler = () => {
     >
       <Tooltip label="Search Users to chat" hasArrow placement='bottom-end'>
         <Button variant="ghost">
-          <i class="fas fa-search"></i>
+          <i className="fas fa-search"></i>
           <Text display={{ base: 'none', md: 'flex' }} onClick={onOpen}
             pl={"5px"}>
             Search User
